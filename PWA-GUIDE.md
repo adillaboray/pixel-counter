@@ -22,7 +22,7 @@
 │  │  │           Cache Storage                          │  │
 │  │  │  pixel-counter-v{N}                              │  │
 │  │  │  ├─ /                     (HTML)                 │  │
-│  │  │  ├─ /counter.html         (HTML)                 │  │
+│  │  │  ├─ /index.html         (HTML)                 │  │
 │  │  │  ├─ /manifest.json        (PWA manifest)         │  │
 │  │  │  ├─ /icon.svg             (app icon)             │  │
 │  │  │  └─ /sw.js                (service worker)       │  │
@@ -84,7 +84,7 @@ sequenceDiagram
 ```mermaid
 sequenceDiagram
     participant Browser
-    participant Page as counter.html
+    participant Page as index.html
     participant Prompt as Install Popup
     participant App as Installed PWA
 
@@ -129,7 +129,7 @@ When a new service worker installs, it creates a versioned cache and pre-caches 
 | Asset | Purpose |
 |---|---|
 | `/` | Root HTML entry point |
-| `/counter.html` | Explicit HTML fallback |
+| `/index.html` | Explicit HTML fallback |
 | `/manifest.json` | PWA install manifest |
 | `/icon.svg` | App icon |
 | `/sw.js` | Service worker itself |
@@ -191,7 +191,7 @@ Browsers detect service worker updates by comparing `sw.js` bytes. Bumping `CACH
 
 | File | Role |
 |---|---|
-| `counter.html` | App shell + SW registration + update popup + install popup UI |
+| `index.html` | App shell + SW registration + update popup + install popup UI |
 | `sw.js` | Service worker: install, activate, fetch, messaging |
 | `manifest.json` | PWA metadata for install prompt |
 | `icon.svg` | App icon (512×512, pixel art) |
