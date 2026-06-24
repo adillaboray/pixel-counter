@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <rect width="512" height="512" fill="#000" rx="64"/>
+  <!-- 16-bit pixel style "0" -->
+  <rect x="144" y="80" width="32" height="352" fill="#fff"/>
+  <rect x="336" y="80" width="32" height="352" fill="#fff"/>
+  <rect x="144" y="80" width="224" height="32" fill="#fff"/>
+  <rect x="144" y="400" width="224" height="32" fill="#fff"/>
+  <!-- pixel decorative dots -->
+  <rect x="80" y="80" width="16" height="16" fill="#f0f"/>
+  <rect x="416" y="80" width="16" height="16" fill="#0ff"/>
+  <rect x="80" y="416" width="16" height="16" fill="#0ff"/>
+  <rect x="416" y="416" width="16" height="16" fill="#f0f"/>
+  <!-- scanline effect -->
+  <g opacity="0.08">
+    <rect x="0" y="0" width="512" height="4" fill="#fff"/>
+    <rect x="0" y="8" width="512" height="4" fill="#fff"/>
+    <rect x="0" y="16" width="512" height="4" fill="#fff"/>
+    <rect x="0" y="24" width="512" height="4" fill="#fff"/>
+    <rect x="0" y="32" width="512" height="4" fill="#fff"/>
+    <rect x="0" y="40" width="512" height="4" fill="#fff"/>
+    <rect x="0" y="48" width="512" height="4" fill="#fff"/>
+    <rect x="0" y="56" width="512" height="4" fill="#fff"/>
+    <rect x="0" y="64" width="512" height="4" fill="#fff"/>
+    <rect x="0" y="72" width="512" height="4" fill="#fff"/>
+    <rect x="0" y="80" width="512" height="4" fill="#fff"/>
+  </g>
+</svg>
