@@ -1,8 +1,8 @@
-const CACHE_VERSION = 2;
+const CACHE_VERSION = 0.2;
 const CACHE = 'pixel-counter-v' + CACHE_VERSION;
 const ASSETS = [
   '/',
-  '/counter.html',
+  '/index.html',
   '/manifest.json',
   '/icon.svg',
   '/sw.js'
@@ -28,10 +28,16 @@ self.addEventListener('message', (e) => {
 
 self.addEventListener('fetch', (e) => {
   e.respondWith(
-    fetch(e.request).then((res) => {
-      const clone = res.clone();
-      caches.open(CACHE).then((cache) => cache.put(e.request, clone));
-      return res;
-    }).catch(() => caches.match(e.request).then((r) => r || new Response('', { status: 404 })))
+    caches.match(e.request).then((cached) => {
+      const networkFetch = fetch(e.request).then((res) => {
+        if (!res || res.status !== 200 || res.type !== 'basic') return res;
+        const clone = res.clone();
+        caches.open(CACHE).then((cache) => cache.put(e.request, clone));
+        return res;
+      });
+      return cached || networkFetch;
+    }).catch(() => {
+      return fetch(e.request).catch(() => new Response('', { status: 404 }));
+    })
   );
 });
