@@ -3,32 +3,32 @@
 ## Architecture Overview
 
 ```
-┌─────────────────────────────────────────────────────────────┐
+┌──────────────────────────────────────────────────────────────┐
 │                     Browser / PWA Shell                      │
-│  ┌──────────┐  ┌──────────────┐  ┌──────────────┐  ┌────┐  │
-│  │ counter  │  │ update-popup │  │install-popup │  │manifest │
-│  │  .html   │  │  (UI layer)  │  │ (UI layer)   │  │ .json  │
-│  └────┬─────┘  └──────┬───────┘  └──────┬───────┘  └────┘  │
-│       │               │                      │              │
-│  ┌────▼───────────────▼──────────────────────▼───────────┐  │
+│  ┌──────────┐  ┌──────────────┐  ┌──────────────┐  ┌────┐    │
+│  │ index    │  │ update-popup │  │install-popup │  │manifest │
+│  │  .html   │  │  (UI layer)  │  │ (UI layer)   │  │ .json   │
+│  └────┬─────┘  └──────┬───────┘  └──────┬───────┘  └────┘    │
+│       │               │                 │                    │
+│  ┌────▼───────────────▼─────────────────▼───────────────┐─┐  │
 │  │              Service Worker (sw.js)                    │  │
-│  │  ┌──────────┐  ┌──────────┐  ┌─────────────────────┐  │  │
-│  │  │ Install  │  │ Activate │  │  Fetch (cache-first  │  │  │
-│  │  │ (cache   │  │ (clean   │  │  + stale-while-     │  │  │
-│  │  │ assets)  │  │ old caches)│  └─────────┬───────────┘  │  │
-│  │  └──────────┘  └──────────┘  │           │              │
-│  │                              │           ▼              │
-│  │  ┌───────────────────────────┴──────────────────────┐  │
-│  │  │           Cache Storage                          │  │
-│  │  │  pixel-counter-v{N}                              │  │
-│  │  │  ├─ /                     (HTML)                 │  │
-│  │  │  ├─ /index.html         (HTML)                 │  │
-│  │  │  ├─ /manifest.json        (PWA manifest)         │  │
-│  │  │  ├─ /icon.svg             (app icon)             │  │
-│  │  │  └─ /sw.js                (service worker)       │  │
-│  │  └──────────────────────────────────────────────────┘  │
-│  └────────────────────────────────────────────────────────┘
-└─────────────────────────────────────────────────────────────┘
+│  │  ┌──────────┐  ┌──────────┐  ┌──────────────────────┐  │  │
+│  │  │ Install  │  │ Activate │  │  Fetch (cache-first) │  │  │
+│  │  │ (cache   │  │ (clean   │  │  + stale-while-      │  │  │
+│  │  │ assets)  │  │ old caches) └─────────┬────────────┘  │  │
+│  │  └──────────┘  └──────────┘            │               │  │
+│  │                                        ▼               │  │
+│  │  ┌───────────────────────────┴──────────────────────┐  │  │
+│  │  │           Cache Storage                          │  │  │
+│  │  │  pixel-counter-v{N}                              │  │  │
+│  │  │  ├─ /                     (HTML)                 │  │  │
+│  │  │  ├─ /index.html         (HTML)                   │  │  │
+│  │  │  ├─ /manifest.json        (PWA manifest)         │  │  │
+│  │  │  ├─ /icon.svg             (app icon)             │  │  │
+│  │  │  └─ /sw.js                (service worker)       │  │  │
+│  │  └──────────────────────────────────────────────────┘  │  │
+│  └────────────────────────────────────────────────────────┘  |
+└──────────────────────────────────────────────────────────────┘
 ```
 
 ---
@@ -113,7 +113,7 @@ sequenceDiagram
 
 ### Requirements for the prompt to fire
 | Condition | Detail |
-|---|---|
+|--------|---|
 | HTTPS or localhost | Required for all PWA features |
 | Valid manifest.json | Must have name, icons, display, start_url |
 | Active service worker | Must be registered and activated |

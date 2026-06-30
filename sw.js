@@ -1,10 +1,11 @@
-const CACHE_VERSION = 0.2;
+const CACHE_VERSION = 0.3;
 const CACHE = 'pixel-counter-v' + CACHE_VERSION;
 const ASSETS = [
   '/',
   '/index.html',
   '/manifest.json',
   '/icon.svg',
+  '/PressStart2P-vaV7.ttf',
   '/sw.js'
 ];
 
