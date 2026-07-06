@@ -199,10 +199,10 @@ document.getElementById('reset').addEventListener('click', (e) => {
   countEl.textContent = count;
 });
 
+let swRegistration;
+
 // Service Worker registration with update popup
 if ('serviceWorker' in navigator) {
-  let swRegistration;
-
   navigator.serviceWorker.register('/sw.js').then((reg) => {
     swRegistration = reg;
     reg.addEventListener('updatefound', () => {
@@ -224,6 +224,7 @@ const popup = document.getElementById('updatePopup');
 popup.addEventListener('click', (e) => e.stopPropagation());
 document.getElementById('updateBtn').addEventListener('click', (e) => {
   e.stopPropagation();
+  popup.classList.remove('active');
   if (swRegistration && swRegistration.waiting) {
     swRegistration.waiting.postMessage({ type: 'SKIP_WAITING' });
   }

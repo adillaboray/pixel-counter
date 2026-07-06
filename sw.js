@@ -1,4 +1,4 @@
-const CACHE_VERSION = 0.3;
+const CACHE_VERSION = 0.4;
 const CACHE = 'pixel-counter-v' + CACHE_VERSION;
 const ASSETS = [
   '/',
