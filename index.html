@@ -160,6 +160,64 @@ body {
   font-size: 8px;
   animation: blink 1s step-end infinite;
 }
+
+/* Resume popup - 16-bit style */
+.resume-popup {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: #111;
+  border: 2px solid #ff0;
+  color: #fff;
+  padding: 24px 32px;
+  font-family: 'Press Start 2P', monospace;
+  font-size: 12px;
+  text-align: center;
+  display: none;
+  z-index: 1000;
+  gap: 16px;
+  align-items: center;
+  image-rendering: pixelated;
+  box-shadow: 0 0 0 2px #000, 0 0 0 4px #ff0;
+  flex-direction: column;
+  max-width: 90%;
+}
+.resume-popup.active { display: flex; }
+.resume-popup .resume-count {
+  font-size: 32px;
+  color: #ff0;
+  margin: 8px 0;
+}
+.resume-popup .resume-label {
+  font-size: 10px;
+  color: #888;
+}
+.resume-popup .resume-buttons {
+  display: flex;
+  gap: 12px;
+  margin-top: 8px;
+}
+.resume-popup button {
+  background: #ff0;
+  color: #000;
+  border: none;
+  font-family: 'Press Start 2P', monospace;
+  font-size: 10px;
+  padding: 8px 16px;
+  cursor: pointer;
+  transition: background 0.1s;
+}
+.resume-popup button:hover { background: #fff; }
+.resume-popup button.secondary {
+  background: transparent;
+  border: 1px solid #888;
+  color: #888;
+}
+.resume-popup button.secondary:hover {
+  border-color: #fff;
+  color: #fff;
+}
 </style>
 </head>
 <body>
@@ -178,31 +236,101 @@ body {
     <button id="installBtn">YES</button>
     <button class="dismiss" id="installDismiss">NAH</button>
   </div>
+  <div class="resume-popup" id="resumePopup">
+    <span class="resume-label">PREVIOUS SESSION</span>
+    <span class="resume-count" id="resumeCount">0</span>
+    <span>Continue where you left off?</span>
+    <div class="resume-buttons">
+      <button id="resumeContinue">CONTINUE</button>
+      <button class="secondary" id="resumeNew">FRESH START</button>
+    </div>
+  </div>
 </div>
 <script>
+const STORAGE_KEY = 'pc-state';
+const MAX_SESSIONS = 20;
+const IDLE_DELAY = 5000;
+
 const countEl = document.getElementById('count');
 let count = 0;
+let totalClicks = 0;
+let sessionId = Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 8);
+let sessionStartedAt = Date.now();
+let idleTimer = null;
 
-document.getElementById('counterArea').addEventListener('click', (e) => {
-  if (e.target.id === 'reset') return;
-  countEl.textContent = ++count;
-});
+function loadState() {
+  try { const r = localStorage.getItem(STORAGE_KEY); return r ? JSON.parse(r) : null; } catch { return null; }
+}
 
-document.addEventListener('keydown', (e) => {
-  if (e.key === 'Enter') {
-    countEl.textContent = ++count;
+function saveState() {
+  const state = loadState() || { sessions: [] };
+  state.lastCount = count;
+  const entry = { id: sessionId, startedAt: sessionStartedAt, endedAt: Date.now(), finalCount: count, totalClicks };
+  state.lastSession = entry;
+  const idx = state.sessions.findIndex(s => s.id === sessionId);
+  if (idx >= 0) state.sessions[idx] = entry; else state.sessions.push(entry);
+  if (state.sessions.length > MAX_SESSIONS) state.sessions = state.sessions.slice(-MAX_SESSIONS);
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+}
+
+function resetIdle() { clearTimeout(idleTimer); idleTimer = setTimeout(saveState, IDLE_DELAY); }
+function saveImmediate() { clearTimeout(idleTimer); saveState(); }
+
+function showResumePopup(n) {
+  return new Promise(resolve => {
+    const p = document.getElementById('resumePopup');
+    document.getElementById('resumeCount').textContent = n;
+    p.classList.add('active');
+    document.getElementById('resumeContinue').onclick = e => { e.stopPropagation(); p.classList.remove('active'); resolve(true); };
+    document.getElementById('resumeNew').onclick = e => { e.stopPropagation(); p.classList.remove('active'); resolve(false); };
+  });
+}
+
+(async () => {
+  const state = loadState();
+  if (state && state.lastCount > 0) {
+    if (await showResumePopup(state.lastCount)) {
+      count = state.lastCount;
+      totalClicks = state.lastSession?.totalClicks || 0;
+      sessionId = state.lastSession?.id || sessionId;
+      sessionStartedAt = state.lastSession?.startedAt || sessionStartedAt;
+    }
   }
-});
-
-document.getElementById('reset').addEventListener('click', (e) => {
-  e.stopPropagation();
-  count = 0;
   countEl.textContent = count;
-});
+
+  document.getElementById('counterArea').addEventListener('click', e => {
+    if (e.target.id === 'reset' || e.target.closest('.resume-popup')) return;
+    countEl.textContent = ++count;
+    totalClicks++;
+    resetIdle();
+  });
+
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Enter') {
+      countEl.textContent = ++count;
+      totalClicks++;
+      resetIdle();
+    }
+  });
+
+  document.getElementById('reset').addEventListener('click', e => {
+    e.stopPropagation();
+    saveState();
+    count = 0; totalClicks = 0;
+    sessionId = Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 8);
+    sessionStartedAt = Date.now();
+    countEl.textContent = count;
+  });
+
+  document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') saveImmediate(); });
+  window.addEventListener('pagehide', saveImmediate);
+  window.addEventListener('beforeunload', saveImmediate);
+})();
+
+document.getElementById('resumePopup').addEventListener('click', e => e.stopPropagation());
 
 let swRegistration;
 
-// Service Worker registration with update popup
 if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('/sw.js').then((reg) => {
     swRegistration = reg;
@@ -239,7 +367,6 @@ function showUpdatePopup() {
   popup.classList.add('active');
 }
 
-// Install prompt
 let deferredPrompt;
 const installPopup = document.getElementById('installPopup');
 
