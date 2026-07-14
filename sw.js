@@ -1,4 +1,4 @@
-const CACHE_VERSION = 0.6; // next version: 0.7 (if you change the cache name, the service worker will re-install and re-cache all assets)
+const CACHE_VERSION = 0.7;
 const CACHE = 'pixel-counter-v' + CACHE_VERSION;
 const ASSETS = [
   '/',

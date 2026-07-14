@@ -61,6 +61,34 @@ body {
   color: rgba(255,255,255,0.9);
 }
 
+#vibToggle {
+  position: fixed;
+  bottom: 32px;
+  left: 32px;
+  background: none;
+  border: 1px solid rgba(255,255,255,0.3);
+  color: rgba(255,255,255,0.5);
+  font-size: 16px;
+  padding: 10px 22px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.15s;
+  font-family: 'Press Start 2P', monospace;
+  display: none;
+}
+#vibToggle:hover {
+  border-color: rgba(255,255,255,0.7);
+  color: rgba(255,255,255,0.9);
+}
+#vibToggle.on {
+  border-color: rgba(0,255,136,0.5);
+  color: rgba(0,255,136,0.7);
+}
+#vibToggle.on:hover {
+  border-color: rgba(0,255,136,0.9);
+  color: rgba(0,255,136,1);
+}
+
 /* Update popup - 16-bit style */
 .update-popup {
   position: fixed;
@@ -224,6 +252,7 @@ body {
 <div class="counter-container" id="counterArea">
   <span id="count">0</span>
   <button id="reset">Reset</button>
+  <button id="vibToggle">VIB: OFF</button>
   <div class="update-popup" id="updatePopup">
     <span class="badge">NEW</span>
     <span>Update available!</span>
@@ -258,6 +287,52 @@ let sessionId = Date.now().toString(36) + '-' + Math.random().toString(36).slice
 let sessionStartedAt = Date.now();
 let idleTimer = null;
 
+const VIBRATION_KEY = 'pc-vibration';
+let vibrationEnabled = false;
+const vibToggleEl = document.getElementById('vibToggle');
+
+function supportsVibration() {
+  return 'vibrate' in navigator;
+}
+
+function vibrate(pattern) {
+  if (vibrationEnabled && supportsVibration()) {
+    try { navigator.vibrate(pattern); } catch {}
+  }
+}
+
+function loadVibrationState() {
+  try {
+    const v = localStorage.getItem(VIBRATION_KEY);
+    vibrationEnabled = v !== null ? v === 'true' : supportsVibration();
+  } catch {
+    vibrationEnabled = supportsVibration();
+  }
+  updateVibToggleUI();
+}
+
+function saveVibrationState() {
+  try { localStorage.setItem(VIBRATION_KEY, String(vibrationEnabled)); } catch {}
+}
+
+function toggleVibration() {
+  vibrationEnabled = !vibrationEnabled;
+  saveVibrationState();
+  updateVibToggleUI();
+  if (vibrationEnabled) vibrate([30, 20, 30]);
+}
+
+function updateVibToggleUI() {
+  if (!supportsVibration()) { vibToggleEl.style.display = 'none'; return; }
+  vibToggleEl.style.display = 'block';
+  vibToggleEl.textContent = vibrationEnabled ? 'VIB: ON' : 'VIB: OFF';
+  vibToggleEl.classList.toggle('on', vibrationEnabled);
+}
+
+vibToggleEl.addEventListener('click', e => { e.stopPropagation(); toggleVibration(); });
+
+console.log('[Pixel Counter] Vibration API supported:', supportsVibration());
+
 function loadState() {
   try { const r = localStorage.getItem(STORAGE_KEY); return r ? JSON.parse(r) : null; } catch { return null; }
 }
@@ -274,7 +349,7 @@ function saveState() {
 }
 
 function resetIdle() { clearTimeout(idleTimer); idleTimer = setTimeout(saveState, IDLE_DELAY); }
-function saveImmediate() { clearTimeout(idleTimer); saveState(); }
+function saveImmediate() { clearTimeout(idleTimer); saveState(); saveVibrationState(); }
 
 function showResumePopup(n) {
   return new Promise(resolve => {
@@ -287,6 +362,7 @@ function showResumePopup(n) {
 }
 
 (async () => {
+  loadVibrationState();
   const state = loadState();
   if (state && state.lastCount > 0) {
     if (await showResumePopup(state.lastCount)) {
@@ -299,9 +375,10 @@ function showResumePopup(n) {
   countEl.textContent = count;
 
   document.getElementById('counterArea').addEventListener('click', e => {
-    if (e.target.id === 'reset' || e.target.closest('.resume-popup')) return;
+    if (e.target.id === 'reset' || e.target.id === 'vibToggle' || e.target.closest('.resume-popup')) return;
     countEl.textContent = ++count;
     totalClicks++;
+    vibrate(10);
     resetIdle();
   });
 
@@ -309,6 +386,7 @@ function showResumePopup(n) {
     if (e.key === 'Enter') {
       countEl.textContent = ++count;
       totalClicks++;
+      vibrate(10);
       resetIdle();
     }
   });
@@ -316,6 +394,7 @@ function showResumePopup(n) {
   document.getElementById('reset').addEventListener('click', e => {
     e.stopPropagation();
     saveState();
+    vibrate([50, 30, 50]);
     count = 0; totalClicks = 0;
     sessionId = Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 8);
     sessionStartedAt = Date.now();

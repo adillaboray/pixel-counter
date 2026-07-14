@@ -5,6 +5,19 @@ All notable changes to the **Pixel Counter** project are documented in this file
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.7.0] — 2026-07-14
+
+### Added
+- Web Vibration API integration for haptic feedback on count (click and Enter key)
+- Distinct vibration pattern on reset (`[50, 30, 50]`) to differentiate from counting
+- Vibration toggle button (bottom-left) with ON/OFF state and green accent when active
+- Feature detection (`navigator.vibrate`) — toggle only visible on supported devices (Android Chrome)
+- Vibration state persisted to `localStorage` (`pc-vibration` key) across sessions
+- Console logging of vibration API support status for debugging
+
+### Changed
+- Bumped service worker cache version to `0.7`
+
 ## [0.6.0] — 2026-07-09
 
 ### Added
